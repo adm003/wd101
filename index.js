@@ -1,50 +1,59 @@
-// Get references to the form, table, and input elements
-const form = document.getElementById('registrationForm');
-const table = document.getElementById('registrationTable');
-const nameInput = document.getElementById('name');
-const emailInput = document.getElementById('email');
-const passwordInput = document.getElementById('password');
-const dobInput = document.getElementById('dob');
-const termsInput = document.getElementById('terms');
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('registrationForm');
+    const table = document.getElementById('entriesTable').getElementsByTagName('tbody')[0];
 
-// Function to add a new entry to the table
-function addEntry(name, email, password, dob) {
-  const row = table.insertRow();
-  const nameCell = row.insertCell(0);
-  const emailCell = row.insertCell(1);
-  const passwordCell = row.insertCell(2);
-  const dobCell = row.insertCell(3);
+    function validateAge(dob) {
+        const birthDate = new Date(dob);
+        const today = new Date();
+        const age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+        return age >= 18 && age <= 55;
+    }
 
-  nameCell.textContent = name;
-  emailCell.textContent = email;
-  passwordCell.textContent = password;
-  dobCell.textContent = dob;
-}
+    function addEntryToTable(data) {
+        const row = table.insertRow();
+        row.insertCell(0).textContent = data.name;
+        row.insertCell(1).textContent = data.email;
+        row.insertCell(2).textContent = data.password;
+        row.insertCell(3).textContent = data.dob;
+        row.insertCell(4).textContent = data.acceptedTerms;
+    }
 
-// Event listener for form submission
-form.addEventListener('submit', (event) => {
-  event.preventDefault();
+    function loadEntriesFromStorage() {
+        const entries = JSON.parse(localStorage.getItem('entries')) || [];
+        entries.forEach(addEntryToTable);
+    }
 
-  // Validate email and age here
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        
+        const name = document.getElementById('name').value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const dob = document.getElementById('dob').value;
+        const acceptedTerms = document.getElementById('terms').checked;
+        
+        if (!validateAge(dob)) {
+            alert('You must be between 18 and 55 years old.');
+            return;
+        }
+        
+        const formData = { name, email, password, dob, acceptedTerms };
+        
+        // Store data in localStorage
+        const entries = JSON.parse(localStorage.getItem('entries')) || [];
+        entries.push(formData);
+        localStorage.setItem('entries', JSON.stringify(entries));
+        
+        // Add entry to table
+        addEntryToTable(formData);
+        
+        form.reset();
+    });
 
-  // Add entry to the table
-  addEntry(nameInput.value, emailInput.value, passwordInput.value, dobInput.value);
-
-  // Persist data using local storage or session storage
-  localStorage.setItem('registrationData', JSON.stringify({
-    name: nameInput.value,
-    email: emailInput.value,
-    password: passwordInput.value,
-    dob: dobInput.value
-  }));
-
-  // Clear form fields
-  form.reset();
+    // Load data from localStorage on page load
+    loadEntriesFromStorage();
 });
-
-// Retrieve data from local storage on page load
-const storedData = localStorage.getItem('registrationData');
-if (storedData) {
-  const data = JSON.parse(storedData);
-  addEntry(data.name, data.email, data.password, data.dob);
-}
