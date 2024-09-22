@@ -1,37 +1,50 @@
-const registrationForm = document.getElementById('registrationForm');
-const registrationTable = document.getElementById('registrationTable');
+// Get references to the form, table, and input elements
+const form = document.getElementById('registrationForm');
+const table = document.getElementById('registrationTable');
+const nameInput = document.getElementById('name');
+const emailInput = document.getElementById('email');
+const passwordInput = document.getElementById('password');
+const dobInput = document.getElementById('dob');
+const termsInput = document.getElementById('terms');
 
-registrationForm.addEventListener('submit', (event) => {
-    event.preventDefault();
+// Function to add a new entry to the table
+function addEntry(name, email, password, dob) {
+  const row = table.insertRow();
+  const nameCell = row.insertCell(0);
+  const emailCell = row.insertCell(1);
+  const passwordCell = row.insertCell(2);
+  const dobCell = row.insertCell(3);
 
-    const name = document.getElementById('name').value;
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    const dob = document.getElementById('dob').value;
-    const terms = document.getElementById('terms').checked;
+  nameCell.textContent = name;
+  emailCell.textContent = email;
+  passwordCell.textContent = password;
+  dobCell.textContent = dob;
+}
 
-    // Validate date of birth (between 18 and 55)
-    const birthDate = new Date(dob);
-    const currentDate = new Date();
-    const age = currentDate.getFullYear() - birthDate.getFullYear();
-    if (age < 18 || age > 55) {
-        alert('Date of birth must be between 18 and 55 years old.');
-        return;
-    }
+// Event listener for form submission
+form.addEventListener('submit', (event) => {
+  event.preventDefault();
 
-    // Store data in web storage (adjust as needed)
-    // ...
+  // Validate email and age here
 
-    // Add data to table
-    const newRow = registrationTable.querySelector('tbody').insertRow();
-    newRow.innerHTML = `
-        <td>${name}</td>
-        <td>${email}</td>
-        <td>${password}</td>
-        <td>${dob}</td>
-        <td>${terms ? 'Yes' : 'No'}</td>
-    `;
+  // Add entry to the table
+  addEntry(nameInput.value, emailInput.value, passwordInput.value, dobInput.value);
+
+  // Persist data using local storage or session storage
+  localStorage.setItem('registrationData', JSON.stringify({
+    name: nameInput.value,
+    email: emailInput.value,
+    password: passwordInput.value,
+    dob: dobInput.value
+  }));
+
+  // Clear form fields
+  form.reset();
 });
 
-// Load saved data from web storage (adjust as needed)
-// ...
+// Retrieve data from local storage on page load
+const storedData = localStorage.getItem('registrationData');
+if (storedData) {
+  const data = JSON.parse(storedData);
+  addEntry(data.name, data.email, data.password, data.dob);
+}
